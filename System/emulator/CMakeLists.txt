@@ -76,22 +76,36 @@ elseif (LINUX)
     )
 
 elseif (WIN32)
+    include_directories(
+        windows
+        windows/SDL2-2.0.20/include
+    )
 
+    add_executable(
+        ${CMAKE_PROJECT_NAME}
+        ${SOURCES}
+    )
+
+    target_link_libraries(${CMAKE_PROJECT_NAME}
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2main.lib
+    )
 endif()
 
-
-find_package(PkgConfig)
-
-
-# Set compiler options
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-psabi -Wall -Wextra -Wpedantic)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE EMULATOR=1)
 
-# pkg-config
-find_package(PkgConfig)
+if (NOT WIN32)
+    find_package(PkgConfig)
 
-# Add SDL includes/library/options
-find_package(SDL2 REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
-target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
+    # Set compiler options
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-psabi -Wall -Wextra -Wpedantic)
+
+    # pkg-config
+    find_package(PkgConfig)
+
+    # Add SDL includes/library/options
+    find_package(SDL2 REQUIRED)
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
+    target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
+endif()
