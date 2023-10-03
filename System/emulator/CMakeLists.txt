@@ -68,14 +68,16 @@ if (APPLE)
         # MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/customtemplate.plist.in
     )
     set_source_files_properties(${AquariusPlusEmulator_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+endif()
 
-elseif (LINUX)
+if (LINUX)
     add_executable(
         ${CMAKE_PROJECT_NAME}
         ${SOURCES}
     )
+endif()
 
-elseif (WIN32)
+if (WIN32)
     include_directories(
         windows
         windows/SDL2-2.0.20/include
@@ -83,7 +85,9 @@ elseif (WIN32)
 
     add_executable(
         ${CMAKE_PROJECT_NAME}
+        WIN32
         ${SOURCES}
+        windows/Resource.rc
     )
 
     target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -108,4 +112,20 @@ if (NOT WIN32)
     target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
     target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
     target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
+endif()
+
+if (WIN32)
+    include(InstallRequiredSystemLibraries)
+    install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2.dll DESTINATION bin)
+
+    # set(CPACK_PACKAGE_VERSION_MAJOR "${Tutorial_VERSION_MAJOR}")
+    # set(CPACK_PACKAGE_VERSION_MINOR "${Tutorial_VERSION_MINOR}")
+    set(CPACK_WIX_UPGRADE_GUID "f97b24e4-36c5-42a8-9925-2182c67db3d3")
+    set(CPACK_SOURCE_GENERATOR "WIX")
+    set(CPACK_GENERATOR "WIX")
+    set(CPACK_PACKAGE_EXECUTABLES "AquariusPlusEmulator;Aquarius+ Emulator")
+    set(CPACK_WIX_PRODUCT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/windows/AquariusPlusEmu.ico)
+    set(CPACK_WIX_PROGRAM_MENU_FOLDER .)
+    include(CPack)
 endif()
