@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 
+execute_process(COMMAND
+    git describe --always
+    OUTPUT_VARIABLE APP_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 project(AquariusPlusEmulator)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -119,12 +124,20 @@ if (WIN32)
     install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2.dll DESTINATION bin)
 
-    # set(CPACK_PACKAGE_VERSION_MAJOR "${Tutorial_VERSION_MAJOR}")
-    # set(CPACK_PACKAGE_VERSION_MINOR "${Tutorial_VERSION_MINOR}")
+    # set(CPACK_PACKAGE_VERSION_MAJOR 1)
+    # set(CPACK_PACKAGE_VERSION_MINOR 0)
+    # set(CPACK_PACKAGE_VERSION_PATCH 0)
+    set(CPACK_PACKAGE_NAME "Aquarius+ Emulator")
+    set(CPACK_PACKAGE_VENDOR "The Aquarius+ Project")
+    set(CPACK_PACKAGE_DESCRIPTION "Emulator for the Aquarius+ system")
+    set(CPACK_PACKAGE_FILE_NAME "AquariusPlusEmu-Windows-x64-${APP_VERSION}")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "AquariusPlusEmulator")
+    set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/windows/AquariusPlusEmu.ico)
     set(CPACK_WIX_UPGRADE_GUID "f97b24e4-36c5-42a8-9925-2182c67db3d3")
     set(CPACK_SOURCE_GENERATOR "WIX")
     set(CPACK_GENERATOR "WIX")
     set(CPACK_PACKAGE_EXECUTABLES "AquariusPlusEmulator;Aquarius+ Emulator")
+    set(CPACK_CREATE_DESKTOP_LINKS "AquariusPlusEmulator;Aquarius+ Emulator")
     set(CPACK_WIX_PRODUCT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/windows/AquariusPlusEmu.ico)
     set(CPACK_WIX_PROGRAM_MENU_FOLDER .)
     include(CPack)
