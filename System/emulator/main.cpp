@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     auto &config = Config::instance();
     config.init(appDataPath);
 
-    std::string romPath = basePath + "/aquarius.rom";
+    std::string romPath;
     std::string cartRomPath;
     std::string typeInStr;
 

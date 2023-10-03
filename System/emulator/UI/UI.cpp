@@ -15,6 +15,7 @@
 #include "MemoryEditor.h"
 #include "tinyfiledialogs.h"
 #include "Config.h"
+#include "aquarius_rom.h"
 
 UI::UI() {
 }
@@ -35,9 +36,17 @@ void UI::start(
         exit(1);
     }
 
-    // Load system ROM
-    if (!emuState.loadSystemROM(romPath))
-        exit(1);
+    if (romPath.empty()) {
+        memcpy(emuState.systemRom, aquarius_rom_start, sizeof(aquarius_rom_start));
+        emuState.systemRomSize = sizeof(aquarius_rom_start);
+
+    } else {
+        // Load system ROM
+        if (!emuState.loadSystemROM(romPath)) {
+            fprintf(stderr, "Error loading system ROM\n");
+            exit(1);
+        }
+    }
 
     // Load cartridge ROM
     if (!cartRomPath.empty() && !emuState.loadCartridgeROM(cartRomPath.c_str())) {
