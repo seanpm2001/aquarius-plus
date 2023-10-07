@@ -56,7 +56,7 @@ if (APPLE)
     set(AquariusPlusEmulator_ICON ${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.icns)
 
     add_executable(
-        ${CMAKE_PROJECT_NAME}
+        "${CMAKE_PROJECT_NAME}"
         MACOSX_BUNDLE
 
         ${AquariusPlusEmulator_ICON}
@@ -140,5 +140,18 @@ if (WIN32)
     set(CPACK_CREATE_DESKTOP_LINKS "AquariusPlusEmulator;Aquarius+ Emulator")
     set(CPACK_WIX_PRODUCT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/windows/AquariusPlusEmu.ico)
     set(CPACK_WIX_PROGRAM_MENU_FOLDER .)
+    include(CPack)
+endif()
+
+if (APPLE)
+    include(InstallRequiredSystemLibraries)
+    install(TARGETS ${CMAKE_PROJECT_NAME} BUNDLE DESTINATION .)
+
+    set(CPACK_PACKAGE_NAME "Aquarius+ Emulator")
+    set(CPACK_PACKAGE_VENDOR "The Aquarius+ Project")
+    set(CPACK_PACKAGE_DESCRIPTION "Emulator for the Aquarius+ system")
+    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_PACKAGE_FILE_NAME "AquariusPlusEmu-macOS-${APP_VERSION}")
+
     include(CPack)
 endif()
