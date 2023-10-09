@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 
+if (APPLE)
+# Build universal binary
+set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "" FORCE)
+endif()
+
 execute_process(COMMAND
     git describe --always
     OUTPUT_VARIABLE APP_VERSION
@@ -54,12 +59,14 @@ set(SOURCES
 
 if (APPLE)
     set(AquariusPlusEmulator_ICON ${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.icns)
+    set(SDL2_Framework ${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.app/Contents/Frameworks/SDL2.framework)
 
     add_executable(
         "${CMAKE_PROJECT_NAME}"
         MACOSX_BUNDLE
 
         ${AquariusPlusEmulator_ICON}
+        ${SDL2_Framework}
         ${SOURCES}
     )
 
@@ -73,6 +80,49 @@ if (APPLE)
         # MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/customtemplate.plist.in
     )
     set_source_files_properties(${AquariusPlusEmulator_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.app/Contents/Frameworks/SDL2.framework PROPERTIES MACOSX_PACKAGE_LOCATION "Frameworks")
+
+    # Set compiler options
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-psabi -Wall -Wextra -Wpedantic)
+
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -F${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.app/Contents/Frameworks)
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.app/Contents/Frameworks/SDL2.framework/Headers)
+    target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -F${CMAKE_CURRENT_SOURCE_DIR}/macos/AquariusPlusEmu.app/Contents/Frameworks -framework SDL2 -Wl,-rpath,@executable_path/../Frameworks/)
+
+    # -Fmacos/AquariusPlusEmu.app/Contents/Frameworks
+
+    # pkg-config
+    # find_package(PkgConfig)
+
+    # Add SDL includes/library/options
+    # find_package(SDL2 REQUIRED)
+    # target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
+    # target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
+    # target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
+
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+
+    include(InstallRequiredSystemLibraries)
+
+    # set(BU_COPY_FULL_FRAMEWORK_CONTENTS "ON")
+    install(TARGETS ${CMAKE_PROJECT_NAME} BUNDLE DESTINATION .)
+    install(CODE [[
+
+    ]] COMPONENT Runtime)
+
+    
+    # install(CODE [[
+    #     include(BundleUtilities)
+    #     fixup_bundle("${CMAKE_INSTALL_PREFIX}/AquariusPlusEmulator.app" "" "")
+    # ]] COMPONENT Runtime)
+
+    set(CPACK_PACKAGE_NAME "Aquarius+ Emulator")
+    set(CPACK_PACKAGE_VENDOR "The Aquarius+ Project")
+    set(CPACK_PACKAGE_DESCRIPTION "Emulator for the Aquarius+ system")
+    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_PACKAGE_FILE_NAME "AquariusPlusEmu-macOS-${APP_VERSION}")
+
+    include(CPack)
 endif()
 
 if (LINUX)
@@ -80,6 +130,18 @@ if (LINUX)
         ${CMAKE_PROJECT_NAME}
         ${SOURCES}
     )
+
+    # Set compiler options
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-psabi -Wall -Wextra -Wpedantic)
+
+    # pkg-config
+    find_package(PkgConfig)
+
+    # Add SDL includes/library/options
+    find_package(SDL2 REQUIRED)
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
+    target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
 endif()
 
 if (WIN32)
@@ -99,27 +161,7 @@ if (WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2.lib
         ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2main.lib
     )
-endif()
 
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE EMULATOR=1)
-
-if (NOT WIN32)
-    find_package(PkgConfig)
-
-    # Set compiler options
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-psabi -Wall -Wextra -Wpedantic)
-
-    # pkg-config
-    find_package(PkgConfig)
-
-    # Add SDL includes/library/options
-    find_package(SDL2 REQUIRED)
-    target_link_libraries(${CMAKE_PROJECT_NAME} ${SDL2_LIBRARIES})
-    target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS})
-    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${SDL2_CFLAGS_OTHER})
-endif()
-
-if (WIN32)
     include(InstallRequiredSystemLibraries)
     install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/windows/SDL2-2.0.20/lib/x64/SDL2.dll DESTINATION bin)
@@ -143,15 +185,4 @@ if (WIN32)
     include(CPack)
 endif()
 
-if (APPLE)
-    include(InstallRequiredSystemLibraries)
-    install(TARGETS ${CMAKE_PROJECT_NAME} BUNDLE DESTINATION .)
-
-    set(CPACK_PACKAGE_NAME "Aquarius+ Emulator")
-    set(CPACK_PACKAGE_VENDOR "The Aquarius+ Project")
-    set(CPACK_PACKAGE_DESCRIPTION "Emulator for the Aquarius+ system")
-    set(CPACK_GENERATOR "DragNDrop")
-    set(CPACK_PACKAGE_FILE_NAME "AquariusPlusEmu-macOS-${APP_VERSION}")
-
-    include(CPack)
-endif()
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE EMULATOR=1)
