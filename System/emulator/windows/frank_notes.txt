@@ -1,0 +1,12 @@
+The ESP32 networking consists of 2 parts. One is HTTP/HTTPS access, the other is socket (TCP/UDP) access (used for instance for the telnet client). As far as I know SDL2 does not provide any networking functionality, so that is not really where to look. For HTTP/HTTPS access I normally would look at a library such as libcurl for cross platform support (since this still also needs to be done for Mac/Linux). But there are also the probably easier to use Win32 APIs for HTTP access:
+
+https://learn.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-httpopenrequesta
+https://learn.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-httpsendrequesta
+
+Which can also be used instead for the Win32 implementation I think.
+
+ah btw, there is actually some networking support for SDL2:
+
+but it is part of a separate sub library. It provides TCP and UDP functionality, but not HTTP/HTTPS
+
+- Frank, 17 APR 2024
